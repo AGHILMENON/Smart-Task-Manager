@@ -1,0 +1,8 @@
+motor
+groq
+python-dotenv
+fastapi
+uvicorn
+sqlalchemy
+passlib[bcrypt]
+python-jose
