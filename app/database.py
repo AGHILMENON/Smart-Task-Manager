@@ -1,28 +1,56 @@
-import os
+# ===== SQLite Configuration (Commented Out) =====
+# from sqlalchemy import create_engine
+# from sqlalchemy.ext.declarative import declarative_base
+# from sqlalchemy.orm import sessionmaker
+#
+# SQLALCHEMY_DATABASE_URL = "sqlite:///./smart_task_manager.db"
+#
+# engine = create_engine(
+#     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+# )
+# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+#
+# Base = declarative_base()
+#
+# def get_db():
+#     db = SessionLocal()
+#     try:
+#         yield db
+#     finally:
+#         db.close()
 
-from motor.motor_asyncio import AsyncIOMotorClient
+# ===== MongoDB Configuration =====
+from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
+from app.config import MONGODB_URL, DATABASE_NAME
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "devpilot_ai")
+try:
+    client = MongoClient(MONGODB_URL, serverSelectionTimeoutMS=5000)
+    # Verify connection
+    client.admin.command('ping')
+    db = client[DATABASE_NAME]
+    
+    # Create collections with validation
+    if "users" not in db.list_collection_names():
+        db.create_collection("users")
+        db["users"].create_index("username", unique=True)
+        db["users"].create_index("email", unique=True)
+    
+    if "tasks" not in db.list_collection_names():
+        db.create_collection("tasks")
+        db["tasks"].create_index("user_id")
+        db["tasks"].create_index("created_at")
+    
+    print(f"Connected to MongoDB at {MONGODB_URL}")
+    print(f"Database: {DATABASE_NAME}")
+except ServerSelectionTimeoutError as e:
+    print(f"Failed to connect to MongoDB: {e}")
+    print(f"Make sure MongoDB is running at {MONGODB_URL}")
+    raise
 
-client: AsyncIOMotorClient | None = None
+def get_db():
+    """Get MongoDB database instance"""
+    return db
 
-def get_mongo_client() -> AsyncIOMotorClient:
-    global client
-    if client is None:
-        client = AsyncIOMotorClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-    return client
-
-
-def get_database():
-    return get_mongo_client()[MONGO_DB_NAME]
-
-
-async def check_mongodb_connection() -> bool:
-    try:
-        client = get_mongo_client()
-        await client.admin.command("ping")
-        return True
-    except ServerSelectionTimeoutError:
-        return False
+# SQLAlchemy compatibility (commented out)
+# Base = None

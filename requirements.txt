@@ -1,8 +1,10 @@
-motor
 groq
 python-dotenv
 fastapi
 uvicorn
+pymongo
 sqlalchemy
-passlib[bcrypt]
-python-jose
+passlib
+python-jose[cryptography]
+python-multipart
+bson

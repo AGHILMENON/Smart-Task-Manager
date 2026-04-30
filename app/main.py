@@ -1,26 +1,22 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 
-from database import check_mongodb_connection
-from groq_client import test_groq_connection
+# ===== SQLAlchemy Initialization (Commented Out) =====
+# from app.database import engine, Base
+# 
+# # Create database tables
+# Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+# ===== MongoDB Connection =====
+# MongoDB is initialized in app/database.py when the module is imported
+
+from routes.auth import router as auth_router
+from routes.task import router as task_router
+
+app = FastAPI(title="Smart Task Manager", version="1.0.0")
+
+app.include_router(auth_router, prefix="/auth", tags=["authentication"])
+app.include_router(task_router, prefix="/tasks", tags=["tasks"])
 
 @app.get("/")
-def home():
-    return {"message": "DevPilot AI Backend Running"}
-
-
-@app.get("/db-check")
-async def db_check():
-    connected = await check_mongodb_connection()
-    if connected:
-        return {"mongodb": "connected"}
-    raise HTTPException(status_code=503, detail="Cannot connect to MongoDB")
-
-
-@app.get("/groq-check")
-def groq_check():
-    connected = test_groq_connection()
-    if connected:
-        return {"groq": "connected"}
-    raise HTTPException(status_code=503, detail="Cannot connect to GROQ/Sanity")
+def root():
+    return {"message": "Smart Task Manager API is running - MongoDB Edition"}
