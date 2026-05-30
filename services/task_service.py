@@ -41,51 +41,67 @@ from schemas import TaskCreate, TaskUpdate
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
+def _convert_object_ids(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert ObjectId fields to strings for JSON serialization"""
+    if isinstance(data, dict):
+        converted = {}
+        for key, value in data.items():
+            if isinstance(value, ObjectId):
+                converted[key] = str(value)
+            elif isinstance(value, list):
+                converted[key] = [_convert_object_ids(item) if isinstance(item, dict) else item for item in value]
+            elif isinstance(value, dict):
+                converted[key] = _convert_object_ids(value)
+            else:
+                converted[key] = value
+        return converted
+    return data
+
 def get_tasks(db, user_id: str, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
-    \"\"\"Get all tasks for a user with pagination\"\"\"
+    """Get all tasks for a user with pagination"""
     try:
         user_object_id = ObjectId(user_id) if isinstance(user_id, str) else user_id
     except:
         return []
     
-    tasks = list(db.tasks.find({\"user_id\": user_object_id}).skip(skip).limit(limit))
-    return tasks
+    tasks = list(db.tasks.find({"user_id": user_object_id}).skip(skip).limit(limit))
+    return [_convert_object_ids(task) for task in tasks]
 
 def get_task(db, task_id: str, user_id: str) -> Optional[Dict[str, Any]]:
-    \"\"\"Get a specific task by ID and verify user ownership\"\"\"
+    """Get a specific task by ID and verify user ownership"""
     try:
         task_object_id = ObjectId(task_id) if isinstance(task_id, str) else task_id
         user_object_id = ObjectId(user_id) if isinstance(user_id, str) else user_id
     except:
         return None
     
-    task = db.tasks.find_one({\"_id\": task_object_id, \"user_id\": user_object_id})
-    return task
+    task = db.tasks.find_one({"_id": task_object_id, "user_id": user_object_id})
+    return _convert_object_ids(task) if task else None
 
 def create_task(db, task: TaskCreate, user_id: str) -> Dict[str, Any]:
-    \"\"\"Create a new task\"\"\"
+    """Create a new task"""
     try:
         user_object_id = ObjectId(user_id) if isinstance(user_id, str) else user_id
     except:
         return None
     
     task_data = {
-        \"title\": task.title,
-        \"description\": task.description,
-        \"completed\": False,
-        \"priority\": task.priority,
-        \"due_date\": task.due_date,
-        \"user_id\": user_object_id,
-        \"created_at\": datetime.utcnow(),
-        \"updated_at\": datetime.utcnow()
+        "title": task.title,
+        "description": task.description,
+        "completed": False,
+        "priority": task.priority,
+        "due_date": task.due_date,
+        "user_id": user_object_id,
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
     }
     
     result = db.tasks.insert_one(task_data)
-    task_data[\"_id\"] = result.inserted_id
-    return task_data
+    task_data["_id"] = result.inserted_id
+    return _convert_object_ids(task_data)
 
 def update_task(db, task_id: str, task_update: TaskUpdate, user_id: str) -> Optional[Dict[str, Any]]:
-    \"\"\"Update an existing task\"\"\"
+    """Update an existing task"""
     try:
         task_object_id = ObjectId(task_id) if isinstance(task_id, str) else task_id
         user_object_id = ObjectId(user_id) if isinstance(user_id, str) else user_id
@@ -93,22 +109,22 @@ def update_task(db, task_id: str, task_update: TaskUpdate, user_id: str) -> Opti
         return None
     
     update_data = task_update.model_dump(exclude_unset=True)
-    update_data[\"updated_at\"] = datetime.utcnow()
+    update_data["updated_at"] = datetime.utcnow()
     
     result = db.tasks.find_one_and_update(
-        {\"_id\": task_object_id, \"user_id\": user_object_id},
-        {\"$set\": update_data},
+        {"_id": task_object_id, "user_id": user_object_id},
+        {"$set": update_data},
         return_document=True
     )
-    return result
+    return _convert_object_ids(result) if result else None
 
 def delete_task(db, task_id: str, user_id: str) -> Optional[Dict[str, Any]]:
-    \"\"\"Delete a task\"\"\"
+    """Delete a task"""
     try:
         task_object_id = ObjectId(task_id) if isinstance(task_id, str) else task_id
         user_object_id = ObjectId(user_id) if isinstance(user_id, str) else user_id
     except:
         return None
     
-    result = db.tasks.find_one_and_delete({\"_id\": task_object_id, \"user_id\": user_object_id})
-    return result
+    result = db.tasks.find_one_and_delete({"_id": task_object_id, "user_id": user_id})
+    return _convert_object_ids(result) if result else None

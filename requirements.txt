@@ -7,4 +7,3 @@ sqlalchemy
 passlib
 python-jose[cryptography]
 python-multipart
-bson

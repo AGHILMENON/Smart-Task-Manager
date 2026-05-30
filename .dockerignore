@@ -1,0 +1,16 @@
+venv
+.git
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.db
+*.sqlite3
+<!-- .env
+.env.* -->
+Dockerfile
+README.md
+readme.md
+MIGRATION_COMPLETE.txt
+QUICK_START.md

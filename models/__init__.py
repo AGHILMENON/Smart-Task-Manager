@@ -32,7 +32,7 @@ from datetime import datetime
 from typing import Optional
 
 class User:
-    \"\"\"MongoDB User model\"\"\"
+    """MongoDB User model"""
     def __init__(self, username: str, email: str, hashed_password: str, 
                  is_active: bool = True, _id: Optional[ObjectId] = None, 
                  created_at: Optional[datetime] = None):
@@ -45,29 +45,29 @@ class User:
     
     def to_dict(self):
         return {
-            \"_id\": self._id,
-            \"username\": self.username,
-            \"email\": self.email,
-            \"hashed_password\": self.hashed_password,
-            \"is_active\": self.is_active,
-            \"created_at\": self.created_at
+            "_id": self._id,
+            "username": self.username,
+            "email": self.email,
+            "hashed_password": self.hashed_password,
+            "is_active": self.is_active,
+            "created_at": self.created_at
         }
     
     @staticmethod
     def from_dict(data):
         return User(
-            username=data.get(\"username\"),
-            email=data.get(\"email\"),
-            hashed_password=data.get(\"hashed_password\"),
-            is_active=data.get(\"is_active\", True),
-            _id=data.get(\"_id\"),
-            created_at=data.get(\"created_at\")
+            username=data.get("username"),
+            email=data.get("email"),
+            hashed_password=data.get("hashed_password"),
+            is_active=data.get("is_active", True),
+            _id=data.get("_id"),
+            created_at=data.get("created_at")
         )
 
 class Task:
-    \"\"\"MongoDB Task model\"\"\"
+    """MongoDB Task model"""
     def __init__(self, title: str, user_id: ObjectId, description: Optional[str] = None,
-                 completed: bool = False, priority: str = \"medium\", due_date: Optional[datetime] = None,
+                 completed: bool = False, priority: str = "medium", due_date: Optional[datetime] = None,
                  _id: Optional[ObjectId] = None, created_at: Optional[datetime] = None,
                  updated_at: Optional[datetime] = None):
         self._id = _id or ObjectId()
@@ -82,27 +82,27 @@ class Task:
     
     def to_dict(self):
         return {
-            \"_id\": self._id,
-            \"title\": self.title,
-            \"description\": self.description,
-            \"completed\": self.completed,
-            \"priority\": self.priority,
-            \"due_date\": self.due_date,
-            \"user_id\": self.user_id,
-            \"created_at\": self.created_at,
-            \"updated_at\": self.updated_at
+            "_id": self._id,
+            "title": self.title,
+            "description": self.description,
+            "completed": self.completed,
+            "priority": self.priority,
+            "due_date": self.due_date,
+            "user_id": self.user_id,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
         }
     
     @staticmethod
     def from_dict(data):
         return Task(
-            title=data.get(\"title\"),
-            user_id=data.get(\"user_id\"),
-            description=data.get(\"description\"),
-            completed=data.get(\"completed\", False),
-            priority=data.get(\"priority\", \"medium\"),
-            due_date=data.get(\"due_date\"),
-            _id=data.get(\"_id\"),
-            created_at=data.get(\"created_at\"),
-            updated_at=data.get(\"updated_at\")
+            title=data.get("title"),
+            user_id=data.get("user_id"),
+            description=data.get("description"),
+            completed=data.get("completed", False),
+            priority=data.get("priority", "medium"),
+            due_date=data.get("due_date"),
+            _id=data.get("_id"),
+            created_at=data.get("created_at"),
+            updated_at=data.get("updated_at")
         )
